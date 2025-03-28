@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ProductosService } from './productos.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
-
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
+@ApiTags('productos')
 @Controller('productos')
 export class ProductosController {
   constructor(private readonly productosService: ProductosService) {}
@@ -13,7 +14,11 @@ export class ProductosController {
   }
 
   @Get()
-  findAll() {
+  @ApiQuery({ name: 'categoriaId', required: false, type: Number })
+  findAll(@Query('categoriaId') categoriaId?: string) {
+    if (categoriaId) {
+      return this.productosService.findByCategoria(+categoriaId);
+    }
     return this.productosService.findAll();
   }
 

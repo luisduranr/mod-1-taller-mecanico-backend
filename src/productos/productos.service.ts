@@ -1,18 +1,22 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { CreateProductoDto } from './dto/create-producto.dto';
-import { UpdateProductoDto } from './dto/update-producto.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
+import { CreateProductoDto } from './dto/create-producto.dto';
+import { UpdateProductoDto } from './dto/update-producto.dto';
 import { Prisma } from '@prisma/client';
 @Injectable()
 export class ProductosService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   async create(createProductoDto: CreateProductoDto) {
-
+    const { categoriaId, ...productoData } = createProductoDto;
     try {
-      return await this.prismaService.producto.create({
-        data: createProductoDto
+      return this.prisma.producto.create({
+        data: {
+          ...productoData,
+          categoria: { connect: { id: categoriaId } }
+        },
+        include: { categoria: true }
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -25,39 +29,55 @@ export class ProductosService {
   }
 
   findAll() {
-    return this.prismaService.producto.findMany();
+    return this.prisma.producto.findMany({
+      include: { categoria: true }
+    });
   }
 
   async findOne(id: number) {
-    const productoEncontrado= await this.prismaService.producto.findUnique({
-      where: { id }
-    });
+
+    const productoEncontrado= await this.prisma.producto.findUnique({
+      where: { id },
+      include: { categoria: true }
+    })
     if (!productoEncontrado) {
       throw new NotFoundException(`Producto con id ${id} no encontrado`);
     }
     return productoEncontrado;
 
   }
+
 
   async update(id: number, updateProductoDto: UpdateProductoDto) {
-    const productoActualizado= await this.prismaService.producto.update({
-      where: { id },
-      data: updateProductoDto
-    });
-    if (!productoActualizado) {
-      throw new NotFoundException(`Producto con id ${id} no encontrado`);
+    const { categoriaId, ...productoData } = updateProductoDto;
+
+    const data: any = { ...productoData };
+
+    if (categoriaId !== undefined) {
+      data.categoria = { connect: { id: categoriaId } };
     }
 
-    return productoActualizado;
+    return this.prisma.producto.update({
+      where: { id },
+      data,
+      include: { categoria: true }
+    });
   }
 
+
   async remove(id: number) {
-    const productoEncontrado= await this.prismaService.producto.delete({
+    const productoEncontrado=  this.prisma.producto.delete({
       where: { id }
     });
     if (!productoEncontrado) {
       throw new NotFoundException(`Producto con id ${id} no encontrado`);
     }
     return productoEncontrado;
+  }
+  async findByCategoria(categoriaId: number) {
+    return this.prisma.producto.findMany({
+      where: { categoriaId },
+      include: { categoria: true }
+    });
   }
 }
