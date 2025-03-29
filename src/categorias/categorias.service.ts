@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-
+import { UpdateCategoriaDto } from './dto/update-categoria.dto';
 @Injectable()
 export class CategoriasService {
   constructor(private prisma: PrismaService) {}
@@ -22,11 +22,17 @@ export class CategoriasService {
   }
 
   async update(params: {
-    where: Prisma.CategoriaWhereUniqueInput;
-    data: Prisma.CategoriaUpdateInput;
+    where: { id: number };
+    data: Prisma.CategoriaUpdateInput | UpdateCategoriaDto;
   }) {
     const { where, data } = params;
-    return this.prisma.categoria.update({ where, data });
+    return this.prisma.categoria.update({
+      where,
+      data: {
+        ...data,
+        updatedAt: new Date() // Actualiza la fecha de modificación automáticamente
+      }
+    });
   }
 
   async remove(where: Prisma.CategoriaWhereUniqueInput) {

@@ -16,10 +16,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
   // Configuración de CORS
   app.enableCors({
-    origin: 'http://localhost:3000', // Reemplaza con tu URL de frontend
+    origin: 'http://localhost:5173', // O especifica tu frontend: 'http://localhost:5173'
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Si usas cookies o autenticación JWT con credenciales
+    allowedHeaders: '*', // Permite cualquier encabezado
   });
+ 
   await app.listen(process.env.PORT ?? 4050);
   // app.setGlobalPrefix('api');
   app.useGlobalPipes(

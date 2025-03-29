@@ -25,10 +25,13 @@ export class CategoriasController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoriaDto: UpdateCategoriaDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCategoriaDto: UpdateCategoriaDto
+  ) {
     return this.categoriasService.update({
       where: { id: +id },
-      data: updateCategoriaDto,
+      data: updateCategoriaDto
     });
   }
 
